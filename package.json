@@ -1,0 +1,26 @@
+{
+  "name": "Portfolio-BFF",
+  "version": "1.0.0",
+  "description": "Portfolio Backend Server in Express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:server": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ashishgopalhattimare/Portfolio-BFF.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ashishgopalhattimare/Portfolio-BFF/issues"
+  },
+  "homepage": "https://github.com/ashishgopalhattimare/Portfolio-BFF#readme",
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.3",
+    "nodemon": "^2.0.15"
+  }
+}
