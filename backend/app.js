@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 
-const certificates = require('./routes/certificateRoute');
+const certificateRoute = require('./routes/certificateRoute');
 
 app.use((_, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,7 +15,6 @@ app.use((_, res, next) => {
 // app.use(cors());
 app.use(bodyParser.json());
 
-app.use('/certificates', certificates.baseRoute);
-app.use('/certificates', certificates.baseRoute_Id);
+app.use('/certificates', certificateRoute);
 
 module.exports = app;

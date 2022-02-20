@@ -1,10 +1,9 @@
 const express = require("express");
 const certificateData = require("../db/certificateData");
 
-const baseRoute = express.Router();
-const baseRoute_Id = express.Router();
+const certificateRoute = express.Router();
 
-baseRoute.route('/')
+certificateRoute.route('/')
 .get((_, res, _2) => {
     const list = certificateData.certificateList;
     res.status(200).json({
@@ -32,7 +31,7 @@ baseRoute.route('/')
     }
 });
 
-baseRoute_Id.route('/:id')
+certificateRoute.route('/:id')
 .post((req, res, _2) => {
     const certificate = req.body;
     const id = parseInt(req.params.id);
@@ -70,10 +69,7 @@ baseRoute_Id.route('/:id')
     }
 });
 
-module.exports = {
-    baseRoute,
-    baseRoute_Id
-}
+module.exports = certificateRoute;
 
 /*
 {
