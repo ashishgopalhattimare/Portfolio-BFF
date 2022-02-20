@@ -1,33 +1,57 @@
 const express = require("express");
 const certificateData = require("../db/certificateData");
 
+const { mongoSetup, findQuery, insertOne } = require('../../backend/mongo-setup');
+
 const certificateRoute = express.Router();
+const collectionName = 'certificates';
+
+function response50X(expressResponse, status, errorCode) {
+    expressResponse.status(status).json({
+        message: 'Internal Server Error',
+        errorCode,
+        timestamp: new Date().getTime()
+    });
+}
+
+function response40X(expressResponse, status, errorCode, message) {
+    expressResponse.status(status).json({
+        message,
+        errorCode,
+        timestamp: new Date().getTime()
+    });
+}
 
 certificateRoute.route('/')
 .get((_, res, _2) => {
-    const list = certificateData.certificateList;
-    res.status(200).json({
-        certificates: list,
-        elements: list.length
-    });
+    mongoSetup(collectionName).then(mongoResponse => {
+        findQuery({}, mongoResponse.collection)
+        .then(list => {
+            res.status(200).json({
+                certificates: list,
+                elements: list.length
+            });
+        })
+        .then(_ => mongoResponse.client.close());
+    })
+    .catch(_ => response50X(res, 500, 500));
 })
 .put((req, res, _2) => {
     const certificate = req.body;
-    
-    if (certificate['id'] == undefined) {
-        const list = certificateData.certificateList;
-        certificate['id'] = list.length;
-        list.push(certificate);
-
-        res.status(201).json({
-            certificate: certificate
-        });
+    if (certificate['id'] == undefined && certificate['_id'] == undefined) {
+        mongoSetup(collectionName).then(mongoResponse => {
+            insertOne(mongoResponse.collection, certificate)
+            .then(response => {
+                console.log('new certificate added : ', response, certificate);
+                res.status(201).json({
+                    certificate: certificate
+                });
+            })
+            .then(_ => mongoResponse.client.close());
+        })
+        .catch(_ => response50X(res, 500, 500));
     } else {
-        res.status(400).json({
-            message: 'Certificate already contains id',
-            errorCode: 400,
-            timestamp: new Date().getTime()
-        });
+        response40X(res, 400, 400, 'Certificate already contains id');
     }
 });
 
