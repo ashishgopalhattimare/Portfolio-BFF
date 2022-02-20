@@ -4,11 +4,12 @@ const { mongoSetup, MongoQuery, PrimaryKeyParser } = require('../../backend/mong
 const certificateRoute = express.Router();
 const collectionName = 'certificates';
 
-function response50X(expressResponse, status, errorCode) {
+function response50X(error, expressResponse, status, errorCode) {
     expressResponse.status(status).json({
         message: 'Internal Server Error',
         errorCode,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        crashLog: error
     });
 }
 
@@ -32,7 +33,7 @@ certificateRoute.route('/')
         })
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(_ => response50X(res, 500, 500));
+    .catch(error => response50X(error, res, 500, 500));
 })
 .put((req, res, _2) => {
     const certificate = PrimaryKeyParser.convertId2UnderscoreId(req.body);
@@ -46,7 +47,7 @@ certificateRoute.route('/')
             })
             .finally(_ => mongoResponse.client.close());
         })
-        .catch(_ => response50X(res, 500, 500));
+        .catch(error => response50X(error, res, 500, 500));
     } else {
         response40X(res, 400, 400, 'Certificate already contains id');
     }
@@ -63,10 +64,10 @@ certificateRoute.route('/:id')
                 certificate: PrimaryKeyParser.convertUnderscoreId2Id(certificate)
             });
         })
-        .catch(_ => response50X(res, 500, 500))
+        .catch(error => response50X(error, res, 500, 500))
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(_ => response50X(res, 500, 500));
+    .catch(error => response50X(error, res, 500, 500));
 })
 .delete((req, res, _2) => {
     const id = req.params.id;
@@ -75,7 +76,7 @@ certificateRoute.route('/:id')
         .then(_ => res.status(204).send())
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(_ => response50X(res, 500, 500));
+    .catch(error => response50X(error, res, 500, 500));
 });
 
 module.exports = certificateRoute;
