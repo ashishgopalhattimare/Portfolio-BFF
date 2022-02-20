@@ -1,9 +1,10 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const environment = require('../environment/environment');
 
 const dbName = 'Portfolio';
 const credentials = {
-    username: 'ashishgopalhattimare',
-    password: 'bdG8IvYprz9KiObs'
+    username: environment.username,
+    password: environment.password
 }
 const config = {
     useNewUrlParser: true,
@@ -57,8 +58,7 @@ function getObjectId(id) {
     return ObjectId(id);
 }
 
-module.exports = {
-    mongoSetup,
+const MongoQuery = {
     getObjectId,
     findQuery,
     insertOne,
@@ -66,12 +66,7 @@ module.exports = {
     deleteById
 };
 
-/**
-
-const collection = db.collection(collectionName);
-collection.find().toArray((err, docs) => {
-    console.log('docs : ', docs.length);
-    client.close();
-});
-
-**/
+module.exports = {
+    mongoSetup,
+    MongoQuery
+};
