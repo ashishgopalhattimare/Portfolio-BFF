@@ -1,5 +1,5 @@
 {
-  "name": "Portfolio-BFF",
+  "name": "portfolio-bff",
   "version": "1.0.0",
   "description": "Portfolio Backend Server in Express",
   "main": "index.js",
