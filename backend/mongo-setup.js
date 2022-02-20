@@ -17,9 +17,9 @@ function findQuery(collection, filter) {
 function insertOne(collection, doc) {
     return collection.insertOne(doc);
 }
-function findOneAndUpdate(collection, filter, doc) {
+function findByIdAndUpdate(collection, id, doc) {
     doc['_id'] = getObjectId(doc['_id']);
-    return collection.findOneAndUpdate(filter, {
+    return collection.findOneAndUpdate({ '_id': getObjectId(id) }, {
         $set: doc
     }).then((response) => {
         if (!response.value) {
@@ -41,7 +41,7 @@ module.exports = {
     getObjectId,
     findQuery,
     insertOne,
-    findOneAndUpdate,
+    findByIdAndUpdate,
     deleteById
 };
 

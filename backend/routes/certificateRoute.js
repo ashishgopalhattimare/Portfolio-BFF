@@ -1,7 +1,7 @@
 const express = require("express");
 const certificateData = require("../db/certificateData");
 
-const { mongoSetup, getObjectId, findQuery, insertOne, findOneAndUpdate, deleteById } = require('../../backend/mongo-setup');
+const { mongoSetup, getObjectId, findQuery, insertOne, findByIdAndUpdate, deleteById } = require('../../backend/mongo-setup');
 
 const certificateRoute = express.Router();
 const collectionName = 'certificates';
@@ -60,7 +60,7 @@ certificateRoute.route('/:id')
     const certificate = req.body;
     const id = req.params.id;
     mongoSetup(collectionName).then(mongoResponse => {
-        findOneAndUpdate(mongoResponse.collection, { '_id': getObjectId(id) }, certificate)
+        findByIdAndUpdate(mongoResponse.collection, id, certificate)
         .then(response => {
             console.log('updated : ', response);
             res.status(201).json({
