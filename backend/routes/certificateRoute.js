@@ -1,6 +1,4 @@
 const express = require("express");
-const certificateData = require("../db/certificateData");
-
 const { mongoSetup, MongoQuery } = require('../../backend/mongo-setup');
 
 const certificateRoute = express.Router();
