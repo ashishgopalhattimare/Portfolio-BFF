@@ -41,8 +41,7 @@ certificateRoute.route('/')
     if (certificate['id'] == undefined && certificate['_id'] == undefined) {
         mongoSetup(collectionName).then(mongoResponse => {
             insertOne(mongoResponse.collection, certificate)
-            .then(response => {
-                console.log('new certificate added : ', response, certificate);
+            .then(_ => {
                 res.status(201).json({
                     certificate: certificate
                 });
@@ -61,16 +60,12 @@ certificateRoute.route('/:id')
     const id = req.params.id;
     mongoSetup(collectionName).then(mongoResponse => {
         findByIdAndUpdate(mongoResponse.collection, id, certificate)
-        .then(response => {
-            console.log('updated : ', response);
+        .then(_ => {
             res.status(201).json({
                 certificate: certificate
             });
         })
-        .catch(err => {
-            console.log(err);
-            response50X(res, 500, 500);
-        })
+        .catch(_ => response50X(res, 500, 500))
         .finally(_ => mongoResponse.client.close());
     })
     .catch(_ => response50X(res, 500, 500));

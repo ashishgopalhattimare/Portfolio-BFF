@@ -11,25 +11,35 @@ function mongoSetup(collectionName) {
     .catch(err => console.log('mongo error : ', err));
 };
 
+function logger(res) {
+    console.log(res);
+    return res;
+}
+
 function findQuery(collection, filter) {
-    return collection.find(filter).toArray();
+    return collection.find(filter).toArray()
+    .then(res => logger(res));
 }
 function insertOne(collection, doc) {
-    return collection.insertOne(doc);
+    return collection.insertOne(doc)
+    .then(res => logger(res));
 }
 function findByIdAndUpdate(collection, id, doc) {
     doc['_id'] = getObjectId(doc['_id']);
     return collection.findOneAndUpdate({ '_id': getObjectId(id) }, {
         $set: doc
-    }).then((response) => {
-        if (!response.value) {
+    })
+    .then(res => logger(res))
+    .then((res) => {
+        if (!res.value) {
             throw new Error('Data Not found');
         }
-        return response;
+        return res;
     });
 }
 function deleteById(collection, id) {
-    return collection.deleteOne({ '_id': ObjectId(id)});
+    return collection.deleteOne({ '_id': ObjectId(id)})
+    .then(res => logger(res));
 }
 
 function getObjectId(id) {
