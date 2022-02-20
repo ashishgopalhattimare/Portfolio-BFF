@@ -10,7 +10,7 @@ const mongo = {
     }
 };
 
-// const url = 'mongodb://localhost:27017';
+// const url = 'mongodb://localhost:2701';
 const url = `mongodb+srv://${mongo.username}:${mongo.password}@cluster0.jtned.mongodb.net/${mongo.db}?retryWrites=true&w=majority`;
 
 function mongoSetup(collectionName) {
@@ -18,7 +18,7 @@ function mongoSetup(collectionName) {
         const collection = client.db(mongo.db).collection(collectionName);
         return { collection, client };
     })
-    .catch(err => console.log('mongo error : ', err));
+    .catch(err => logger(err));
 };
 
 function logger(res) {
