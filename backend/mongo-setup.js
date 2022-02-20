@@ -6,6 +6,7 @@ console.log(environment);
 const mongo = {
     username: 'ashishgopalhattimare',
     password: 'bdG8IvYprz9KiObs',
+    db: "Portfolio",
     config: {
         useNewUrlParser: true,
         useUnifiedTopology: true,
