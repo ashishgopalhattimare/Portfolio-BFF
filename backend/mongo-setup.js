@@ -1,23 +1,21 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const environment = require('../environment/environment');
 
-const dbName = 'Portfolio';
-const credentials = {
-    username: environment.username,
-    password: environment.password
-}
-const config = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverApi: ServerApiVersion.v1
+const mongo = {
+    ...environment.mongo,
+    config: {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverApi: ServerApiVersion.v1
+    }
 };
 
 // const url = 'mongodb://localhost:27017';
-const url = `mongodb+srv://${credentials.username}:${credentials.password}@cluster0.jtned.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+const url = `mongodb+srv://${mongo.username}:${mongo.password}@cluster0.jtned.mongodb.net/${mongo.db}?retryWrites=true&w=majority`;
 
 function mongoSetup(collectionName) {
-    return new MongoClient(url, config).connect().then(client => {
-        const collection = client.db(dbName).collection(collectionName);
+    return new MongoClient(url, mongo.config).connect().then(client => {
+        const collection = client.db(mongo.db).collection(collectionName);
         return { collection, client };
     })
     .catch(err => console.log('mongo error : ', err));
@@ -66,7 +64,22 @@ const MongoQuery = {
     deleteById
 };
 
+const ID = 'id'; const _ID = '_id';
+const PrimaryKeyParser = {
+    convertId2UnderscoreId: (doc) => {
+        doc[_ID] = doc[ID];
+        delete doc[ID];
+        return doc;
+    },
+    convertUnderscoreId2Id: (doc) => {
+        doc[ID] = doc[_ID];
+        delete doc[_ID];
+        return doc;
+    }
+};
+
 module.exports = {
     mongoSetup,
-    MongoQuery
+    MongoQuery,
+    PrimaryKeyParser
 };

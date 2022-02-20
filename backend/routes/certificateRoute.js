@@ -1,5 +1,5 @@
 const express = require("express");
-const { mongoSetup, MongoQuery } = require('../../backend/mongo-setup');
+const { mongoSetup, MongoQuery, PrimaryKeyParser } = require('../../backend/mongo-setup');
 
 const certificateRoute = express.Router();
 const collectionName = 'certificates';
@@ -26,7 +26,7 @@ certificateRoute.route('/')
         MongoQuery.findQuery(mongoResponse.collection, {})
         .then(list => {
             res.status(200).json({
-                certificates: list,
+                certificates: list.map(x => PrimaryKeyParser.convertUnderscoreId2Id(x)),
                 elements: list.length
             });
         })
@@ -35,13 +35,13 @@ certificateRoute.route('/')
     .catch(_ => response50X(res, 500, 500));
 })
 .put((req, res, _2) => {
-    const certificate = req.body;
-    if (certificate['id'] == undefined && certificate['_id'] == undefined) {
+    const certificate = PrimaryKeyParser.convertId2UnderscoreId(req.body);
+    if (certificate['_id'] == undefined) {
         mongoSetup(collectionName).then(mongoResponse => {
             MongoQuery.insertOne(mongoResponse.collection, certificate)
             .then(_ => {
                 res.status(201).json({
-                    certificate: certificate
+                    certificate: PrimaryKeyParser.convertUnderscoreId2Id(certificate)
                 });
             })
             .finally(_ => mongoResponse.client.close());
@@ -54,13 +54,13 @@ certificateRoute.route('/')
 
 certificateRoute.route('/:id')
 .post((req, res, _2) => {
-    const certificate = req.body;
+    const certificate = PrimaryKeyParser.convertId2UnderscoreId(req.body);
     const id = req.params.id;
     mongoSetup(collectionName).then(mongoResponse => {
         MongoQuery.findByIdAndUpdate(mongoResponse.collection, id, certificate)
         .then(_ => {
             res.status(201).json({
-                certificate: certificate
+                certificate: PrimaryKeyParser.convertUnderscoreId2Id(certificate)
             });
         })
         .catch(_ => response50X(res, 500, 500))
