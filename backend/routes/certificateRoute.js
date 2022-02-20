@@ -33,7 +33,7 @@ certificateRoute.route('/')
         })
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(error => response50X(error, res, 500, 500));
+    .catch(error => response50X(error, res, 500, 5001));
 })
 .put((req, res, _2) => {
     const certificate = PrimaryKeyParser.convertId2UnderscoreId(req.body);
@@ -47,7 +47,7 @@ certificateRoute.route('/')
             })
             .finally(_ => mongoResponse.client.close());
         })
-        .catch(error => response50X(error, res, 500, 500));
+        .catch(error => response50X(error, res, 500, 5001));
     } else {
         response40X(res, 400, 400, 'Certificate already contains id');
     }
@@ -67,7 +67,7 @@ certificateRoute.route('/:id')
         .catch(error => response50X(error, res, 500, 500))
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(error => response50X(error, res, 500, 500));
+    .catch(error => response50X(error, res, 500, 5001));
 })
 .delete((req, res, _2) => {
     const id = req.params.id;
@@ -76,7 +76,7 @@ certificateRoute.route('/:id')
         .then(_ => res.status(204).send())
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(error => response50X(error, res, 500, 500));
+    .catch(error => response50X(error, res, 500, 5001));
 });
 
 module.exports = certificateRoute;

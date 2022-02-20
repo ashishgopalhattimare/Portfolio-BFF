@@ -1,8 +1,12 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
 const environment = require('../environment/environment');
+console.log(environment);
 
 const mongo = {
-    ...environment.mongo,
+    username: 'ashishgopalhattimare',
+    password: 'bdG8IvYprz9KiObs',
+    db: "Portfolio",
     config: {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -13,18 +17,18 @@ const mongo = {
 // const url = 'mongodb://localhost:27017';
 const url = `mongodb+srv://${mongo.username}:${mongo.password}@cluster0.jtned.mongodb.net/${mongo.db}?retryWrites=true&w=majority`;
 
+function logger(res) {
+    console.log(res);
+    return res;
+}
+
 function mongoSetup(collectionName) {
     return new MongoClient(url, mongo.config).connect().then(client => {
         const collection = client.db(mongo.db).collection(collectionName);
         return { collection, client };
     })
-    .catch(err => console.log('mongo error : ', err));
+    .catch(err => logger(err));
 };
-
-function logger(res) {
-    console.log(res);
-    return res;
-}
 
 function findQuery(collection, filter) {
     return collection.find(filter).toArray()
