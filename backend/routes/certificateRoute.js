@@ -1,7 +1,7 @@
 const express = require("express");
 const certificateData = require("../db/certificateData");
 
-const { mongoSetup, findQuery, insertOne } = require('../../backend/mongo-setup');
+const { mongoSetup, getObjectId, findQuery, insertOne, findOneAndReplace } = require('../../backend/mongo-setup');
 
 const certificateRoute = express.Router();
 const collectionName = 'certificates';
@@ -25,14 +25,14 @@ function response40X(expressResponse, status, errorCode, message) {
 certificateRoute.route('/')
 .get((_, res, _2) => {
     mongoSetup(collectionName).then(mongoResponse => {
-        findQuery({}, mongoResponse.collection)
+        findQuery(mongoResponse.collection, {})
         .then(list => {
             res.status(200).json({
                 certificates: list,
                 elements: list.length
             });
         })
-        .then(_ => mongoResponse.client.close());
+        .finally(_ => mongoResponse.client.close());
     })
     .catch(_ => response50X(res, 500, 500));
 })
@@ -47,7 +47,7 @@ certificateRoute.route('/')
                     certificate: certificate
                 });
             })
-            .then(_ => mongoResponse.client.close());
+            .finally(_ => mongoResponse.client.close());
         })
         .catch(_ => response50X(res, 500, 500));
     } else {
@@ -58,23 +58,25 @@ certificateRoute.route('/')
 certificateRoute.route('/:id')
 .post((req, res, _2) => {
     const certificate = req.body;
-    const id = parseInt(req.params.id);
-    const list = certificateData.certificateList;
-
-    const index = list.findIndex(x => x.id === id);
-    if (index == -1 || certificate['id'] != index) {
-        res.status(404).json({
-            message: `Certificate invalid`,
-            errorCode: 400,
-            timestamp: new Date().getTime()
-        });
-    } else {
-        list[index] = certificate;
-        res.status(201).json({
-            message: 'Certificate has been updated successfully',
-            timestamp: new Date().getTime()
-        });
-    }
+    const id = req.params.id;
+    mongoSetup(collectionName).then(mongoResponse => {
+        findOneAndReplace(mongoResponse.collection, { '_id': getObjectId(id) }, certificate)
+        .then(response => {
+            console.log('updated : ', response);
+            res.status(201).json({
+                certificate: certificate
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            response50X(res, 500, 500);
+        })
+        .finally(_ => mongoResponse.client.close());
+    })
+    .catch(err => {
+        console.log(err);
+        response50X(res, 500, 500);
+    });
 })
 .delete((req, res, _2) => {
     const id = parseInt(req.params.id);
