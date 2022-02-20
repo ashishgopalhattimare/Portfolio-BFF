@@ -1,6 +1,8 @@
 const { MongoClient, ObjectId } = require('mongodb');
+
 const dbName = 'Portfolio';
 const url = 'mongodb://localhost:27017';
+
 function mongoSetup(collectionName) {
     return MongoClient.connect(url).then(client => {
         const collection = client.db(dbName).collection(collectionName);
@@ -15,7 +17,7 @@ function findQuery(collection, filter) {
 function insertOne(collection, doc) {
     return collection.insertOne(doc);
 }
-function findOneAndReplace(collection, filter, doc) {
+function findOneAndUpdate(collection, filter, doc) {
     doc['_id'] = getObjectId(doc['_id']);
     return collection.findOneAndUpdate(filter, {
         $set: doc
@@ -25,6 +27,9 @@ function findOneAndReplace(collection, filter, doc) {
         }
         return response;
     });
+}
+function deleteById(collection, id) {
+    return collection.deleteOne({ '_id': ObjectId(id)});
 }
 
 function getObjectId(id) {
@@ -36,7 +41,8 @@ module.exports = {
     getObjectId,
     findQuery,
     insertOne,
-    findOneAndReplace
+    findOneAndUpdate,
+    deleteById
 };
 
 /**

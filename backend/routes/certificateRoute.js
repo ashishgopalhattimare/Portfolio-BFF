@@ -1,7 +1,7 @@
 const express = require("express");
 const certificateData = require("../db/certificateData");
 
-const { mongoSetup, getObjectId, findQuery, insertOne, findOneAndReplace } = require('../../backend/mongo-setup');
+const { mongoSetup, getObjectId, findQuery, insertOne, findOneAndUpdate, deleteById } = require('../../backend/mongo-setup');
 
 const certificateRoute = express.Router();
 const collectionName = 'certificates';
@@ -60,7 +60,7 @@ certificateRoute.route('/:id')
     const certificate = req.body;
     const id = req.params.id;
     mongoSetup(collectionName).then(mongoResponse => {
-        findOneAndReplace(mongoResponse.collection, { '_id': getObjectId(id) }, certificate)
+        findOneAndUpdate(mongoResponse.collection, { '_id': getObjectId(id) }, certificate)
         .then(response => {
             console.log('updated : ', response);
             res.status(201).json({
@@ -73,26 +73,16 @@ certificateRoute.route('/:id')
         })
         .finally(_ => mongoResponse.client.close());
     })
-    .catch(err => {
-        console.log(err);
-        response50X(res, 500, 500);
-    });
+    .catch(_ => response50X(res, 500, 500));
 })
 .delete((req, res, _2) => {
-    const id = parseInt(req.params.id);
-    const list = certificateData.certificateList;
-
-    const index = list.findIndex(x => x.id === id);
-    if (index == -1) {
-        res.status(404).json({
-            message: `Certificate invalid`,
-            errorCode: 400,
-            timestamp: new Date().getTime()
-        });
-    } else {
-        list.splice(index, 1);
-        res.status(204).send();
-    }
+    const id = req.params.id;
+    mongoSetup(collectionName).then(mongoResponse => {
+        deleteById(mongoResponse.collection, id)
+        .then(_ => res.status(204).send())
+        .finally(_ => mongoResponse.client.close());
+    })
+    .catch(_ => response50X(res, 500, 500));
 });
 
 module.exports = certificateRoute;
