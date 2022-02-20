@@ -1,10 +1,21 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const dbName = 'Portfolio';
-const url = 'mongodb://localhost:27017';
+const credentials = {
+    username: 'ashishgopalhattimare',
+    password: 'bdG8IvYprz9KiObs'
+}
+const config = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverApi: ServerApiVersion.v1
+};
+
+// const url = 'mongodb://localhost:27017';
+const url = `mongodb+srv://${credentials.username}:${credentials.password}@cluster0.jtned.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 function mongoSetup(collectionName) {
-    return MongoClient.connect(url).then(client => {
+    return new MongoClient(url, config).connect().then(client => {
         const collection = client.db(dbName).collection(collectionName);
         return { collection, client };
     })
