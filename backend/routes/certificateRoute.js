@@ -1,92 +1,81 @@
 const express = require("express");
-const certificateData = require("../db/certificateData");
+const { mongoSetup, MongoQuery, PrimaryKeyParser } = require('../../backend/mongo-setup');
 
-const baseRoute = express.Router();
-const baseRoute_Id = express.Router();
+const certificateRoute = express.Router();
+const collectionName = 'certificates';
 
-baseRoute.route('/')
-.get((_, res, _2) => {
-    const list = certificateData.certificateList;
-    res.status(200).json({
-        certificates: list,
-        elements: list.length
+function response50X(expressResponse, status, errorCode) {
+    expressResponse.status(status).json({
+        message: 'Internal Server Error',
+        errorCode,
+        timestamp: new Date().getTime()
     });
+}
+
+function response40X(expressResponse, status, errorCode, message) {
+    expressResponse.status(status).json({
+        message,
+        errorCode,
+        timestamp: new Date().getTime()
+    });
+}
+
+certificateRoute.route('/')
+.get((_, res, _2) => {
+    mongoSetup(collectionName).then(mongoResponse => {
+        MongoQuery.findQuery(mongoResponse.collection, {})
+        .then(list => {
+            res.status(200).json({
+                certificates: list.map(x => PrimaryKeyParser.convertUnderscoreId2Id(x)),
+                elements: list.length
+            });
+        })
+        .finally(_ => mongoResponse.client.close());
+    })
+    .catch(_ => response50X(res, 500, 500));
 })
 .put((req, res, _2) => {
-    const certificate = req.body;
-    
-    if (certificate['id'] == undefined) {
-        const list = certificateData.certificateList;
-        certificate['id'] = list.length;
-        list.push(certificate);
-
-        res.status(201).json({
-            certificate: certificate
-        });
+    const certificate = PrimaryKeyParser.convertId2UnderscoreId(req.body);
+    if (certificate['_id'] == undefined) {
+        mongoSetup(collectionName).then(mongoResponse => {
+            MongoQuery.insertOne(mongoResponse.collection, certificate)
+            .then(_ => {
+                res.status(201).json({
+                    certificate: PrimaryKeyParser.convertUnderscoreId2Id(certificate)
+                });
+            })
+            .finally(_ => mongoResponse.client.close());
+        })
+        .catch(_ => response50X(res, 500, 500));
     } else {
-        res.status(400).json({
-            message: 'Certificate already contains id',
-            errorCode: 400,
-            timestamp: new Date().getTime()
-        });
+        response40X(res, 400, 400, 'Certificate already contains id');
     }
 });
 
-baseRoute_Id.route('/:id')
+certificateRoute.route('/:id')
 .post((req, res, _2) => {
-    const certificate = req.body;
-    const id = parseInt(req.params.id);
-    const list = certificateData.certificateList;
-
-    const index = list.findIndex(x => x.id === id);
-    if (index == -1 || certificate['id'] != index) {
-        res.status(404).json({
-            message: `Certificate invalid`,
-            errorCode: 400,
-            timestamp: new Date().getTime()
-        });
-    } else {
-        list[index] = certificate;
-        res.status(201).json({
-            message: 'Certificate has been updated successfully',
-            timestamp: new Date().getTime()
-        });
-    }
+    const certificate = PrimaryKeyParser.convertId2UnderscoreId(req.body);
+    const id = req.params.id;
+    mongoSetup(collectionName).then(mongoResponse => {
+        MongoQuery.findByIdAndUpdate(mongoResponse.collection, id, certificate)
+        .then(_ => {
+            res.status(201).json({
+                certificate: PrimaryKeyParser.convertUnderscoreId2Id(certificate)
+            });
+        })
+        .catch(_ => response50X(res, 500, 500))
+        .finally(_ => mongoResponse.client.close());
+    })
+    .catch(_ => response50X(res, 500, 500));
 })
 .delete((req, res, _2) => {
-    const id = parseInt(req.params.id);
-    const list = certificateData.certificateList;
-
-    const index = list.findIndex(x => x.id === id);
-    if (index == -1) {
-        res.status(404).json({
-            message: `Certificate invalid`,
-            errorCode: 400,
-            timestamp: new Date().getTime()
-        });
-    } else {
-        list.splice(index, 1);
-        res.status(204).send();
-    }
+    const id = req.params.id;
+    mongoSetup(collectionName).then(mongoResponse => {
+        MongoQuery.deleteById(mongoResponse.collection, id)
+        .then(_ => res.status(204).send())
+        .finally(_ => mongoResponse.client.close());
+    })
+    .catch(_ => response50X(res, 500, 500));
 });
 
-module.exports = {
-    baseRoute,
-    baseRoute_Id
-}
-
-/*
-{
-    "id": 2,
-    "title": "Kotlin for Java Developers",
-    "organization": {
-        "name": "JetBrains | Coursera",
-        "imageUrl": "https: //media-exp1.licdn.com/dms/image/C4D0BAQHIXTZd-0TR_A/company-logo_100_100/0/1576240838903?e=1650499200&v=beta&t=5MIIJWm4ORmWfPj_DdvBkxkwfhdoM-gWoXyov4s2BQ0"
-    },
-    "issueDate": "May 2020",
-    "credential": {
-        "id": "45E27LJ8TNPP",
-        "url": "https: //www.coursera.org/account/accomplishments/certificate/45E27LJ8TNPP"
-    }
-}
-*/
+module.exports = certificateRoute;

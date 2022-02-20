@@ -132,5 +132,3 @@ const CertificateData = {
     }
   ]
 };
-
-module.exports = CertificateData;
