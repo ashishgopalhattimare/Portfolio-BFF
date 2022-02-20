@@ -14,7 +14,7 @@ const mongo = {
 const url = `mongodb+srv://${mongo.username}:${mongo.password}@cluster0.jtned.mongodb.net/${mongo.db}?retryWrites=true&w=majority`;
 
 function mongoSetup(collectionName) {
-    console.log(url);
+    console.log(url, mongo);
     return new MongoClient(url, mongo.config).connect().then(client => {
         const collection = client.db(mongo.db).collection(collectionName);
         return { collection, client };
