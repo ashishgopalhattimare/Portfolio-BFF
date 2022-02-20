@@ -9,7 +9,7 @@ function response50X(error, expressResponse, status, errorCode) {
         message: 'Internal Server Error',
         errorCode,
         timestamp: new Date().getTime(),
-        crashLog: error
+        crashLog: JSON.stringify(error)
     });
 }
 
